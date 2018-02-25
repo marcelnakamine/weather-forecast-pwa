@@ -183,15 +183,17 @@
   app.getForecast = function(key, label) {
     var url = weatherAPIUrlBase + key + '.json';
 
-    caches.math(url).then(function(response) {
-      if(response) {
-        response.json().then(function(json) {
-          json.key = key;
-          json.label = label;
-          app.updateForecastCard(json);
-        });
-      }
-    });
+    if('caches' in window){
+      caches.math(url).then(function(response) {
+        if(response) {
+          response.json().then(function(json) {
+            json.key = key;
+            json.label = label;
+            app.updateForecastCard(json);
+          });
+        }
+      });
+    }
     
     // Make the XHR to get the data, then update the card
     var request = new XMLHttpRequest();
