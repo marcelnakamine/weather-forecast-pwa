@@ -1,4 +1,5 @@
 var cacheName = 'weatherPWA-v1';
+var dataCacheName = 'weatherData-v1'
 var filesToCache = [
   '/',
   '/index.html',
@@ -19,6 +20,7 @@ var filesToCache = [
   '/images/thunderstorm.png',
   '/images/wind.png'
 ];
+var dataUrl = 'https://publicdata-weather.firebaseio.com/';
 
 self.addEventListener('install', function(e) {
   console.log('[ServiceWorker] Install');
@@ -46,9 +48,23 @@ self.addEventListener('activate', function(e) {
 
 self.addEventListener('fetch', function(e) {
   console.log('[ServiceWorker] Fetch', e.request.url);
-  e.respondWith(
-    caches.match(e.request).then(function(response) {
-      return response || fetch(e.request);
-    })
-  );
+  if(e.request.url.startsWith(dataUrl)) {
+    e.respondWith(
+      fetch(e.request)
+        .then(function(response) {
+          return caches.open(dataCacheName).then(function(cache) {
+            cache.put(e.request.url, response.clone());
+            console.log('[ServiceWorker] Fetched & Cached', e.request.url);
+            return response;
+          });
+        })
+    );
+  } else {
+    e.respondWith(
+      caches.match(e.request).then(function(response) {
+        console.log('[ServiceWorker] Fetch Only', e.request.url);
+        return response || fetch(e.request);
+      })
+    );
+  }
 });
