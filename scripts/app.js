@@ -184,7 +184,7 @@
     var url = weatherAPIUrlBase + key + '.json';
 
     if('caches' in window){
-      caches.math(url).then(function(response) {
+      caches.match(url).then(function(response) {
         if(response) {
           response.json().then(function(json) {
             if(app.hasPendingRequest){
