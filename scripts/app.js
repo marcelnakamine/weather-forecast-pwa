@@ -176,7 +176,6 @@
 
   // Local Forage Config
   localforage.config({
-    driver      : localforage.WEBSQL, // Force WebSQL; same as using setDriver()
     name        : 'weather-forecast'
   });
 
