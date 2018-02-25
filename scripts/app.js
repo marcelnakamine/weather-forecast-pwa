@@ -68,6 +68,7 @@
     var label = selected.textContent;
     app.getForecast(key, label);
     app.selectedCities.push({key: key, label: label});
+    app.saveSelectedCities();
     app.toggleAddDialog(false);
   });
 
@@ -91,6 +92,29 @@
       app.addDialog.classList.remove('dialog-container--visible');
     }
   };
+  
+  // Write data on offline storage
+  app.saveSelectedCities = function(data) {
+    localforage.setItem('selectedCities', app.selectedCities);
+  }
+
+  // Load data from offline storage
+  app.loadFromOfflineStorage = function() {
+    localforage.getItem('selectedCities', function(err, cityList) {
+      if (cityList) {
+        app.selectedCities = cityList;
+        app.selectedCities.forEach(function(city) {
+          app.getForecast(city.key, city.label);
+        });
+      } else {
+        app.updateForecastCard(injectedForecast);
+        app.selectedCities = [
+          {key: injectedForecast.key, label: injectedForecast.label}
+        ];
+        app.saveSelectedCities();
+      }
+    });
+  }
 
   // Updates a weather card with the latest weather forecast. If the card
   // doesn't already exist, it's cloned from the template.
@@ -150,6 +174,12 @@
    *
    ****************************************************************************/
 
+  // Local Forage Config
+  localforage.config({
+    driver      : localforage.WEBSQL, // Force WebSQL; same as using setDriver()
+    name        : 'weather-forecast'
+  });
+
   // Gets a forecast for a specific city and update the card with the data
   app.getForecast = function(key, label) {
     var url = weatherAPIUrlBase + key + '.json';
@@ -176,7 +206,7 @@
       app.getForecast(key);
     });
   };
-
-  app.updateForecastCard(injectedForecast);
+  
+  app.loadFromOfflineStorage();
 
 })();
